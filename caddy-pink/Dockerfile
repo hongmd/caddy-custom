@@ -11,7 +11,6 @@ RUN xcaddy build \
     --with github.com/porech/caddy-maxmind-geolocation \
     --with github.com/Odyssey346/ListenCaddy \
     --with github.com/ueffel/caddy-tls-format \
-    --with github.com/mholt/caddy-hitcounter
 
 FROM caddy:${CADDY_VERSION}-alpine
 
