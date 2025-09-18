@@ -14,9 +14,6 @@ on:
   #   paths:
   #     - caddy-pink/Dockerfile
 
-permissions:
-  packages: write
-
 # Environment variables available to all jobs and steps in this workflow
 env:
   DOCKER_BUILDKIT: 1
@@ -95,6 +92,8 @@ jobs:
 
   # Job to build and publish Docker image
   build:
+    permissions:
+      packages: write
     name: Build and publish Docker image
     runs-on: ubuntu-latest
     needs: metadata
