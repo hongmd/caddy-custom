@@ -1,47 +1,37 @@
 # Workflow to build and push a Docker image to Docker Hub, GitHub and Quay Container Registries
 
-name: Build caddy-cloudflare
+name: Build caddy-pink
 
 # Controls when the action will run
 on:
-  workflow_dispatch:  # allows to run the workflow manually from the Actions tab
+  workflow_dispatch: # allows to run the workflow manually from the Actions tab
 
-  schedule:
-    - cron: '0 0 1 * *'  # runs at 00:00 on the first day of every month
-
-
-
+  # schedule:
+  #   - cron: "0 0 1 * *" # runs at 00:00 on the first day of every month
 
   # push:
-  #   branches: main
+  #   branches: [main]
   #   paths:
-  #     - caddy-cloudflare/Dockerfile
+  #     - caddy-pink/Dockerfile
 
 # Environment variables available to all jobs and steps in this workflow
 env:
-
-
   DOCKER_BUILDKIT: 1
-
-
-  DOCKER_NAME: caddy-cloudflare
-  DOCKER_DESCRIPTION: "Caddy Docker custom build with Cloudflare DNS/IPs modules"
-
-
-
+  DOCKER_NAME: caddy-pink
+  DOCKER_DESCRIPTION: "Caddy Docker custom build"
 
 # Jobs to run once the workflow is triggered
 jobs:
   # Job to get image and repository details
   metadata:
-    name: Get image and repository details
+    name: Prepare build metadata and validate
     runs-on: ubuntu-latest
 
     outputs:
       version: ${{ steps.version.outputs.version }}
       labels: ${{ steps.metadata.outputs.labels }}
       tags: ${{ steps.metadata.outputs.tags }}
-      platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/arm/v7,linux/arm/v6
+      platforms: linux/amd64,linux/arm64
 
     steps:
       - name: Checkout repository
@@ -49,13 +39,41 @@ jobs:
         with:
           ref: main
 
+      # Quick validation first
+      - name: Validate Dockerfile exists
+        run: |
+          if [ ! -f "$DOCKER_NAME/Dockerfile" ]; then
+            echo "ERROR: Dockerfile not found at $DOCKER_NAME/Dockerfile" >&2
+            exit 1
+          fi
+          echo "✓ Dockerfile exists"
+
       - name: Parse Caddy version
         id: version
-        run: echo "version=$(grep -Eo 'caddy:[0-9]+\.[0-9]+\.[0-9]+$' $DOCKER_NAME/Dockerfile | cut -d ':' -f2)" | tee -a $GITHUB_OUTPUT
+        run: |
+          set -euo pipefail
+          FILE="$DOCKER_NAME/Dockerfile"
 
+          # Parse version with simplified logic
+          ARG_VER=$(grep -E '^ARG[[:space:]]+CADDY_VERSION=' "$FILE" | sed -E 's/^ARG[[:space:]]+CADDY_VERSION=([0-9]+\.[0-9]+\.[0-9]+).*$/\1/' | head -n1 || true)
 
+          if [ -z "${ARG_VER:-}" ]; then
+            ARG_VER=$(grep -E '^FROM[[:space:]]+caddy:' "$FILE" | sed -E 's/^FROM[[:space:]]+caddy:([0-9]+\.[0-9]+\.[0-9]+).*$/\1/' | head -n1 || true)
+          fi
 
+          if [ -z "${ARG_VER:-}" ]; then
+            echo "ERROR: Could not parse Caddy version from $FILE" >&2
+            exit 1
+          fi
 
+          # Simple validation
+          if ! echo "$ARG_VER" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "ERROR: Invalid version format: $ARG_VER" >&2
+            exit 1
+          fi
+
+          echo "version=${ARG_VER}" >> $GITHUB_OUTPUT
+          echo "✓ Parsed version: $ARG_VER"
 
       - name: Generate image metadata with Caddy version
         uses: docker/metadata-action@v5
@@ -64,8 +82,9 @@ jobs:
           images: |
             docker.io/${{ github.actor }}/${{ env.DOCKER_NAME }}
             ghcr.io/${{ github.actor }}/${{ env.DOCKER_NAME }}
-            quay.io/${{ github.actor }}/${{ env.DOCKER_NAME }}
           tags: |
+            type=raw,value=latest
+            type=raw,value=${{ steps.version.outputs.version }}
             type=semver,pattern={{version}},value=v${{ steps.version.outputs.version }}
             type=semver,pattern={{major}}.{{minor}},value=v${{ steps.version.outputs.version }}
             type=semver,pattern={{major}},value=v${{ steps.version.outputs.version }}
@@ -104,13 +123,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
-      - name: Login to Quay Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: quay.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.QUAY_TOKEN }}
-
       - name: Build and publish container image
         uses: docker/build-push-action@v6
         id: build
@@ -122,23 +134,3 @@ jobs:
           tags: ${{ needs.metadata.outputs.tags }}
           labels: ${{ needs.metadata.outputs.labels }}
           platforms: ${{ needs.metadata.outputs.platforms }}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

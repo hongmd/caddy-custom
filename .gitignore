@@ -1,0 +1,40 @@
+# .gitignore for Caddy custom project
+# Ignore macOS system files
+.DS_Store
+
+# Ignore Docker build artifacts
+*.tar
+*.img
+
+# Ignore log files
+*.log
+
+# Ignore node_modules if any JS tooling is used
+node_modules/
+
+# Ignore Python cache if any Python scripts are used
+__pycache__/
+*.pyc
+
+# Ignore build output
+/build/
+/dist/
+
+# Ignore local env files
+.env
+.env.*
+
+# Ignore VS Code settings
+.vscode/
+
+# Ignore other common editor files
+*.swp
+*~
+.idea/
+
+# Ignore Caddy binary if built locally
+caddy
+caddy.exe
+caddy-darwin*
+caddy-linux*
+caddy-windows*
