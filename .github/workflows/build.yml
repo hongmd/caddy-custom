@@ -94,6 +94,7 @@ jobs:
   build:
     permissions:
       packages: write
+
     name: Build and publish Docker image
     runs-on: ubuntu-latest
     needs: metadata
