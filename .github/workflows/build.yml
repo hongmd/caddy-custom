@@ -14,6 +14,9 @@ on:
   #   paths:
   #     - caddy-pink/Dockerfile
 
+permissions:
+  packages: write
+
 # Environment variables available to all jobs and steps in this workflow
 env:
   DOCKER_BUILDKIT: 1
@@ -35,7 +38,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4.3.0
         with:
           ref: main
 
@@ -83,8 +86,6 @@ jobs:
             docker.io/${{ github.actor }}/${{ env.DOCKER_NAME }}
             ghcr.io/${{ github.actor }}/${{ env.DOCKER_NAME }}
           tags: |
-            type=raw,value=latest
-            type=raw,value=${{ steps.version.outputs.version }}
             type=semver,pattern={{version}},value=v${{ steps.version.outputs.version }}
             type=semver,pattern={{major}}.{{minor}},value=v${{ steps.version.outputs.version }}
             type=semver,pattern={{major}},value=v${{ steps.version.outputs.version }}
@@ -100,7 +101,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4.3.0
         with:
           ref: main
 
@@ -134,3 +135,6 @@ jobs:
           tags: ${{ needs.metadata.outputs.tags }}
           labels: ${{ needs.metadata.outputs.labels }}
           platforms: ${{ needs.metadata.outputs.platforms }}
+          # Buildx cache
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
