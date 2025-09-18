@@ -92,8 +92,6 @@ jobs:
 
   # Job to build and publish Docker image
   build:
-    permissions:
-      packages: write
 
     name: Build and publish Docker image
     runs-on: ubuntu-latest
