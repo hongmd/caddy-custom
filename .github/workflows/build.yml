@@ -76,7 +76,7 @@ jobs:
           echo "✓ Parsed version: $ARG_VER"
 
       - name: Generate image metadata with Caddy version
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v5.8.0
         id: metadata
         with:
           images: |
@@ -104,26 +104,26 @@ jobs:
           ref: main
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v3.6.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v3.11.1
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v3.5.0
         with:
           username: ${{ github.actor }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Login to GitHub Container Repository
-        uses: docker/login-action@v3
+        uses: docker/login-action@v3.5.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
       - name: Build and publish container image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v6.18.0
         id: build
         with:
           context: .
