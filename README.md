@@ -41,3 +41,6 @@ All added modules are available immediately—configure them in your `Caddyfile`
 
 ## Modifying the build
 To add or remove modules, edit the `xcaddy build` statement in `caddy-pink/Dockerfile` and rebuild the image. Refer to the [xcaddy documentation](https://caddyserver.com/docs/build) for syntax details.
+
+## License
+Distributed under the terms of the GNU General Public License v3.0. See `LICENSE` for details.
