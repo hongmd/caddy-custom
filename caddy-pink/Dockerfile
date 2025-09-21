@@ -7,7 +7,10 @@ RUN xcaddy build \
     --with github.com/WeidiDeng/caddy-cloudflare-ip \
     --with github.com/mholt/caddy-dynamicdns \
     --with github.com/mholt/caddy-ratelimit \
-    --with github.com/hslatman/caddy-crowdsec-bouncer \
+    --with github.com/mholt/caddy-l4 \
+    --with github.com/hslatman/caddy-crowdsec-bouncer/http@main \
+    --with github.com/hslatman/caddy-crowdsec-bouncer/appsec@main \
+    --with github.com/hslatman/caddy-crowdsec-bouncer/layer4@main \
     --with github.com/porech/caddy-maxmind-geolocation \
     --with github.com/Odyssey346/ListenCaddy \
     --with github.com/ueffel/caddy-tls-format
