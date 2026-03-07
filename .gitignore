@@ -9,13 +9,6 @@
 # Ignore log files
 *.log
 
-# Ignore node_modules if any JS tooling is used
-node_modules/
-
-# Ignore Python cache if any Python scripts are used
-__pycache__/
-*.pyc
-
 # Ignore build output
 /build/
 /dist/
