@@ -1,0 +1,29 @@
+# Rate limiting
+#
+# Module: caddy-ratelimit
+#
+# Applies per-client-IP sliding window rate limits.
+# No external dependencies required.
+
+example.com {
+	# Strict limit for API endpoints: 20 requests per minute per IP
+	@api path /api/*
+	rate_limit @api {
+		zone api_zone {
+			key    {remote_host}
+			events 20
+			window 1m
+		}
+	}
+
+	# Relaxed limit for everything else: 100 requests per minute per IP
+	rate_limit {
+		zone general_zone {
+			key    {remote_host}
+			events 100
+			window 1m
+		}
+	}
+
+	reverse_proxy localhost:8080
+}

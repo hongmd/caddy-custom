@@ -1,0 +1,27 @@
+# CrowdSec integration (HTTP bouncer)
+#
+# Modules: caddy-crowdsec-bouncer (http, appsec, layer4)
+#
+# Blocks IPs that CrowdSec has flagged as malicious.
+# Requires a running CrowdSec LAPI instance.
+#
+# Required env:
+#   CROWDSEC_API_KEY  — Bouncer API key (cscli bouncers add caddy)
+
+{
+	# Connect to the CrowdSec Local API
+	crowdsec {
+		api_url   http://localhost:8080
+		api_key   {env.CROWDSEC_API_KEY}
+		# Ticker interval decides how often the bouncer
+		# pulls the latest decisions from CrowdSec
+		ticker_interval 15s
+	}
+}
+
+example.com {
+	# Check every request against CrowdSec decisions
+	crowdsec
+
+	reverse_proxy localhost:3000
+}

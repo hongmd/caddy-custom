@@ -39,6 +39,9 @@ docker run --rm \
 
 All added modules are available immediately—configure them in your `Caddyfile` according to their documentation.
 
+## Examples
+See the [`examples/`](examples/) directory for ready-to-use Caddyfile configurations demonstrating each included module.
+
 ## Modifying the build
 To add or remove modules, edit the `xcaddy build` statement in `caddy-pink/Dockerfile` and rebuild the image. Refer to the [xcaddy documentation](https://caddyserver.com/docs/build) for syntax details.
 

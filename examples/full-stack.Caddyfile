@@ -1,0 +1,67 @@
+# Full-stack example — all modules working together
+#
+# Modules: caddy-dns/cloudflare, caddy-cloudflare-ip, caddy-dynamicdns,
+#          caddy-ratelimit, caddy-crowdsec-bouncer, caddy-maxmind-geolocation,
+#          caddy-tls-format
+#
+# Required env:
+#   CF_API_TOKEN    — Cloudflare API token (Zone:DNS:Edit)
+#   CROWDSEC_API_KEY — CrowdSec bouncer API key
+#   MAXMIND_DB_PATH  — Path to GeoLite2-City.mmdb
+
+{
+	# --- TLS via Cloudflare DNS challenge ---
+	acme_dns cloudflare {env.CF_API_TOKEN}
+
+	# --- Dynamic DNS ---
+	dynamic_dns {
+		provider cloudflare {env.CF_API_TOKEN}
+		domains {
+			example.com @
+		}
+		check_interval 5m
+	}
+
+	# --- CrowdSec ---
+	crowdsec {
+		api_url         http://localhost:8080
+		api_key         {env.CROWDSEC_API_KEY}
+		ticker_interval 15s
+	}
+
+	# --- MaxMind GeoIP ---
+	maxmind_geolocation {
+		db_path {env.MAXMIND_DB_PATH}
+	}
+}
+
+# Trust Cloudflare proxy IPs for accurate client addresses
+servers {
+	trusted_proxies cloudflare
+}
+
+example.com {
+	# Block CrowdSec-flagged IPs first
+	crowdsec
+
+	# Rate limit API endpoints
+	@api path /api/*
+	rate_limit @api {
+		zone api_zone {
+			key    {remote_host}
+			events 30
+			window 1m
+		}
+	}
+
+	# Log with GeoIP metadata
+	log {
+		output file /var/log/caddy/access.log
+		format json
+	}
+
+	# Add country header from MaxMind data
+	header X-Country {maxmind_geolocation.country_iso}
+
+	reverse_proxy localhost:8080
+}
