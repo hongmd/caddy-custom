@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG CADDY_VERSION=2.11.3
+ARG CADDY_VERSION=2.11.4
 FROM caddy:${CADDY_VERSION}-builder-alpine AS builder
 
 RUN xcaddy build \
