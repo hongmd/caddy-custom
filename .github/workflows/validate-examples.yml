@@ -1,0 +1,67 @@
+---
+# Validates the example Caddyfiles against a Caddy binary built from the same
+# caddy-pink/Dockerfile `builder` stage as the published image. Nothing is
+# pushed. The module list comes from the Dockerfile, so it cannot drift.
+#
+# This is the repo's test suite: there is no Go code here, and the example
+# configs are the only thing that can break silently.
+
+name: Validate examples
+
+on:
+  pull_request:
+    paths:
+      - examples/**
+      - caddy-pink/Dockerfile
+      - .github/workflows/validate-examples.yml
+  push:
+    branches: [main]
+    paths:
+      - examples/**
+      - caddy-pink/Dockerfile
+      - .github/workflows/validate-examples.yml
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Adapt examples with the image's modules
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@99012661954931238ded8c8b007157a8430204e1  # v4.4.0
+
+      # Only the builder stage: it holds the caddy binary with every module.
+      # A module that no longer builds fails here instead of in the publish run.
+      - name: Build builder stage
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc  # v7.4.0
+        with:
+          context: caddy-pink
+          target: builder
+          load: true
+          tags: caddy-pink-builder:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Adapt only: no server is started, so no real tokens or GeoIP database
+      # are needed. Env placeholders like {env.CF_API_TOKEN} stay unresolved
+      # until the config is actually run.
+      - name: Adapt every example
+        run: |
+          set -uo pipefail
+          rc=0
+          for f in examples/*.Caddyfile; do
+            if out=$(docker run --rm \
+                       -v "$PWD/examples:/e:ro" \
+                       caddy-pink-builder:ci \
+                       caddy adapt --adapter caddyfile --config "/e/$(basename "$f")" 2>&1); then
+              echo "OK   $f"
+            else
+              echo "FAIL $f"
+              printf '%s\n' "$out" | sed 's/^/     /'
+              rc=1
+            fi
+          done
+          exit "$rc"

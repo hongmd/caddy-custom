@@ -12,7 +12,6 @@ RUN xcaddy build \
     --with github.com/hslatman/caddy-crowdsec-bouncer/appsec@main \
     --with github.com/hslatman/caddy-crowdsec-bouncer/layer4@main \
     --with github.com/porech/caddy-maxmind-geolocation \
-    --with github.com/Odyssey346/ListenCaddy \
     --with github.com/ueffel/caddy-tls-format
 
 FROM caddy:${CADDY_VERSION}-alpine

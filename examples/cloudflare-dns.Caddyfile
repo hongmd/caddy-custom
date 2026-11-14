@@ -8,12 +8,12 @@
 {
 	# Use Cloudflare DNS challenge for all sites
 	acme_dns cloudflare {env.CF_API_TOKEN}
-}
 
-# Keep the trusted proxy list in sync with Cloudflare's IP ranges.
-# Caddy will periodically fetch the latest ranges automatically.
-servers {
-	trusted_proxies cloudflare
+	# Keep the trusted proxy list in sync with Cloudflare's IP ranges.
+	# Caddy will periodically fetch the latest ranges automatically.
+	servers {
+		trusted_proxies cloudflare
+	}
 }
 
 example.com {

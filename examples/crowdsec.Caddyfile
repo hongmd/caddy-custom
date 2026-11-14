@@ -20,8 +20,10 @@
 }
 
 example.com {
-	# Check every request against CrowdSec decisions
-	crowdsec
+	route {
+		# Check every request against CrowdSec decisions
+		crowdsec
 
-	reverse_proxy localhost:3000
+		reverse_proxy localhost:3000
+	}
 }

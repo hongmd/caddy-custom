@@ -9,10 +9,10 @@ Custom Docker build that extends the official Caddy image with a set of opiniona
 - `github.com/WeidiDeng/caddy-cloudflare-ip` to keep up-to-date Cloudflare IP ranges
 - `github.com/mholt/caddy-dynamicdns` for pushing records to supported dynamic DNS providers
 - `github.com/mholt/caddy-ratelimit` to throttle traffic per route
-- `github.com/hslatman/caddy-crowdsec-bouncer` to integrate with CrowdSec decisions
-- `github.com/porech/caddy-maxmind-geolocation` to expose MaxMind GeoIP metadata
-- `github.com/Odyssey346/ListenCaddy` to monitor active listeners via HTTP
-- `github.com/ueffel/caddy-tls-format` to export TLS certificates and keys in PEM/DER formats
+- `github.com/mholt/caddy-l4` for TCP/UDP (layer 4) proxying and routing
+- `github.com/hslatman/caddy-crowdsec-bouncer` to integrate with CrowdSec decisions (HTTP, AppSec, layer 4)
+- `github.com/porech/caddy-maxmind-geolocation` to filter requests by MaxMind GeoIP data
+- `github.com/ueffel/caddy-tls-format` to log TLS version and cipher suite in readable form
 
 ## Building the image
 ```bash
@@ -40,7 +40,7 @@ docker run --rm \
 All added modules are available immediately—configure them in your `Caddyfile` according to their documentation.
 
 ## Examples
-See the [`examples/`](examples/) directory for ready-to-use Caddyfile configurations demonstrating each included module.
+See the [`examples/`](examples/) directory for ready-to-use Caddyfile configurations demonstrating each included module. The [Validate examples](.github/workflows/validate-examples.yml) workflow runs `caddy adapt` on each file against the modules in this build, so a broken example fails CI.
 
 ## Modifying the build
 To add or remove modules, edit the `xcaddy build` statement in `caddy-pink/Dockerfile` and rebuild the image. Refer to the [xcaddy documentation](https://caddyserver.com/docs/build) for syntax details.

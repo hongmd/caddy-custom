@@ -1,0 +1,7 @@
+.git
+.remember
+.DS_Store
+.vscode
+.github
+examples
+*.log

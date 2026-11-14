@@ -29,39 +29,43 @@
 		ticker_interval 15s
 	}
 
-	# --- MaxMind GeoIP ---
-	maxmind_geolocation {
-		db_path {env.MAXMIND_DB_PATH}
+	# Trust Cloudflare proxy IPs for accurate client addresses
+	servers {
+		trusted_proxies cloudflare
 	}
-}
-
-# Trust Cloudflare proxy IPs for accurate client addresses
-servers {
-	trusted_proxies cloudflare
 }
 
 example.com {
-	# Block CrowdSec-flagged IPs first
-	crowdsec
-
-	# Rate limit API endpoints
-	@api path /api/*
-	rate_limit @api {
-		zone api_zone {
-			key    {remote_host}
-			events 30
-			window 1m
+	# GeoIP filtering (maxmind_geolocation is a request matcher)
+	@geo {
+		maxmind_geolocation {
+			db_path {env.MAXMIND_DB_PATH}
+			deny_countries RU
 		}
 	}
 
-	# Log with GeoIP metadata
+	# Rate limit API endpoints per real client (not per Cloudflare edge IP)
+	@api path /api/*
+
 	log {
 		output file /var/log/caddy/access.log
 		format json
 	}
 
-	# Add country header from MaxMind data
-	header X-Country {maxmind_geolocation.country_iso}
+	# route keeps this order: geo block, then CrowdSec, then rate limit
+	route {
+		respond @geo 403
 
-	reverse_proxy localhost:8080
+		crowdsec
+
+		rate_limit @api {
+			zone api_zone {
+				key {client_ip}
+				events 30
+				window 1m
+			}
+		}
+
+		reverse_proxy localhost:8080
+	}
 }
