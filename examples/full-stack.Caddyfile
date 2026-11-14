@@ -8,7 +8,6 @@
 #   CF_API_TOKEN    — Cloudflare API token (Zone:DNS:Edit)
 #   CROWDSEC_API_KEY — CrowdSec bouncer API key
 #   MAXMIND_DB_PATH  — Path to GeoLite2-City.mmdb
-
 {
 	# --- TLS via Cloudflare DNS challenge ---
 	acme_dns cloudflare {env.CF_API_TOKEN}
@@ -24,8 +23,8 @@
 
 	# --- CrowdSec ---
 	crowdsec {
-		api_url         http://localhost:8080
-		api_key         {env.CROWDSEC_API_KEY}
+		api_url http://localhost:8080
+		api_key {env.CROWDSEC_API_KEY}
 		ticker_interval 15s
 	}
 

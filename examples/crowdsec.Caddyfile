@@ -7,12 +7,11 @@
 #
 # Required env:
 #   CROWDSEC_API_KEY  — Bouncer API key (cscli bouncers add caddy)
-
 {
 	# Connect to the CrowdSec Local API
 	crowdsec {
-		api_url   http://localhost:8080
-		api_key   {env.CROWDSEC_API_KEY}
+		api_url http://localhost:8080
+		api_key {env.CROWDSEC_API_KEY}
 		# Ticker interval decides how often the bouncer
 		# pulls the latest decisions from CrowdSec
 		ticker_interval 15s

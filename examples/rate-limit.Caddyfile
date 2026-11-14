@@ -10,7 +10,7 @@ example.com {
 	@api path /api/*
 	rate_limit @api {
 		zone api_zone {
-			key    {remote_host}
+			key {remote_host}
 			events 20
 			window 1m
 		}
@@ -19,7 +19,7 @@ example.com {
 	# Relaxed limit for everything else: 100 requests per minute per IP
 	rate_limit {
 		zone general_zone {
-			key    {remote_host}
+			key {remote_host}
 			events 100
 			window 1m
 		}

@@ -4,7 +4,6 @@
 #
 # Required env:
 #   CF_API_TOKEN  — Cloudflare API token (Zone:DNS:Edit)
-
 {
 	# Use Cloudflare DNS challenge for all sites
 	acme_dns cloudflare {env.CF_API_TOKEN}

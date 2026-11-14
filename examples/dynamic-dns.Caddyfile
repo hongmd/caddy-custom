@@ -7,7 +7,6 @@
 #
 # Required env:
 #   CF_API_TOKEN  — Cloudflare API token (Zone:DNS:Edit)
-
 {
 	acme_dns cloudflare {env.CF_API_TOKEN}
 
