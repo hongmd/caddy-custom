@@ -12,6 +12,11 @@ on:
     paths:
       - caddy-pink/Dockerfile
 
+# Only what publishing needs; the repo default is read-only.
+permissions:
+  contents: read
+  packages: write
+
 # Environment variables available to all jobs and steps in this workflow
 env:
   DOCKER_BUILDKIT: 1

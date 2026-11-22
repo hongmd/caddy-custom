@@ -9,6 +9,9 @@
 # Ignore log files
 *.log
 
+# Ignore local session notes
+.remember/
+
 # Ignore build output
 /build/
 /dist/
