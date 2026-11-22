@@ -36,6 +36,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          OWNER: ${{ github.repository_owner }}
+          NAME: caddy-pink
         run: |
           set -euo pipefail
           version=$(grep -E '^ARG[[:space:]]+CADDY_VERSION=' caddy-pink/Dockerfile \
@@ -46,6 +48,19 @@ jobs:
             echo "tag $tag already exists; nothing to release"
             exit 0
           fi
+
+          # Pull the manifest digest anonymously, no registry credentials here.
+          # A missing tag repeats the check a few times while the registry settles.
+          digest=""
+          for _ in 1 2 3 4 5 6; do
+            tok=$(curl -fsS "https://auth.docker.io/token?service=registry.docker.io&scope=repository:$OWNER/$NAME:pull" | jq -r .token) || tok=""
+            digest=$(curl -fsSI -H "Authorization: Bearer $tok" \
+              -H 'Accept: application/vnd.oci.image.index.v1+json,application/vnd.docker.distribution.manifest.list.v2+json' \
+              "https://registry-1.docker.io/v2/$OWNER/$NAME/manifests/$version" \
+              | tr -d '\r' | awk 'tolower($1)=="docker-content-digest:"{print $2}')
+            if [ -n "$digest" ]; then break; fi
+            sleep 10
+          done
 
           # Note range starts at the previous tag. The first release has none,
           # and the API rejects a commit SHA here, so omit it.
@@ -60,3 +75,17 @@ jobs:
             --title "Caddy $version" \
             --generate-notes \
             "${range[@]}"
+
+          # gh cannot append after generated notes, so add the image section in
+          # a follow-up edit. Pull tags are immutable, so both registries share
+          # one manifest digest.
+          if [ -n "$digest" ]; then
+            {
+              gh release view "$tag" --json body --jq .body
+              printf '\n## Container images\n\n```\ndocker.io/%s/%s:%s\nghcr.io/%s/%s:%s\n\nsha256:%s\n```\n' \
+                "$OWNER" "$NAME" "$version" "$OWNER" "$NAME" "$version" "${digest#sha256:}"
+            } > "$RUNNER_TEMP/body.md"
+            gh release edit "$tag" --notes-file "$RUNNER_TEMP/body.md"
+          else
+            echo "::warning::Could not resolve image digest; release created without it"
+          fi
