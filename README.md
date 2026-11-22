@@ -1,7 +1,11 @@
 # caddy-custom
 
-[![Build caddy-pink](https://github.com/hongmd/caddy-custom/actions/workflows/build.yml/badge.svg)](https://github.com/hongmd/caddy-custom/actions/workflows/build.yml)
-[![Docker pulls](https://img.shields.io/docker/pulls/hongmd/caddy-pink)](https://hub.docker.com/r/hongmd/caddy-pink)
+[![Build](https://img.shields.io/github/actions/workflow/status/hongmd/caddy-custom/build.yml?branch=main&label=build)](https://github.com/hongmd/caddy-custom/actions/workflows/build.yml)
+[![Examples](https://img.shields.io/github/actions/workflow/status/hongmd/caddy-custom/validate-examples.yml?branch=main&label=examples)](https://github.com/hongmd/caddy-custom/actions/workflows/validate-examples.yml)
+[![Release](https://img.shields.io/github/v/release/hongmd/caddy-custom?display_name=tag)](https://github.com/hongmd/caddy-custom/releases)
+[![Docker](https://img.shields.io/docker/v/hongmd/caddy-pink?sort=semver&label=docker)](https://hub.docker.com/r/hongmd/caddy-pink)
+[![Image size](https://img.shields.io/docker/image-size/hongmd/caddy-pink?label=size)](https://hub.docker.com/r/hongmd/caddy-pink)
+[![Pulls](https://img.shields.io/docker/pulls/hongmd/caddy-pink)](https://hub.docker.com/r/hongmd/caddy-pink)
 [![License](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
 
 Custom Docker build that extends the official Caddy image with a set of opinionated modules for Cloudflare-friendly deployments.
