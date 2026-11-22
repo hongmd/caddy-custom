@@ -27,9 +27,9 @@ cd caddy-pink
 docker build -t my-caddy .
 ```
 
-Use the `CADDY_VERSION` build argument in the `Dockerfile` to pin the upstream Caddy release:
+The upstream Caddy release is pinned by `ARG CADDY_VERSION` at the top of [`caddy-pink/Dockerfile`](caddy-pink/Dockerfile). Override it at build time:
 ```bash
-docker build --build-arg CADDY_VERSION=2.10.2 -t my-caddy .
+docker build --build-arg CADDY_VERSION=<version> -t my-caddy .
 ```
 
 ## Running the container
@@ -47,6 +47,15 @@ All added modules are available immediately—configure them in your `Caddyfile`
 
 ## Examples
 See the [`examples/`](examples/) directory for ready-to-use Caddyfile configurations demonstrating each included module. The [Validate examples](.github/workflows/validate-examples.yml) workflow runs `caddy adapt` on each file against the modules in this build, so a broken example fails CI.
+
+## Pulling the published image
+Images are published to both registries for every release, in `amd64` and `arm64`:
+```bash
+docker pull hongmd/caddy-pink:<version>
+# or pin a digest, which is the only immutable reference
+docker pull hongmd/caddy-pink@sha256:<digest>
+```
+Each release's notes list the full image digest. Tags `<major>.<minor>`, `<major>` and `latest` track the newest build and are moved on every publish.
 
 ## Modifying the build
 To add or remove modules, edit the `xcaddy build` statement in `caddy-pink/Dockerfile` and rebuild the image. Refer to the [xcaddy documentation](https://caddyserver.com/docs/build) for syntax details.
