@@ -46,11 +46,16 @@ jobs:
             exit 0
           fi
 
+          # Note range starts at the previous tag. The first release has none,
+          # and the API rejects a commit SHA here, so omit it.
           prev=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1 || true)
-          prev=${prev:-$(git rev-list --max-parents=0 HEAD)}
+          range=()
+          if [ -n "$prev" ]; then
+            range=(--notes-start-tag "$prev")
+          fi
 
           gh release create "$tag" \
             --target "$SHA" \
             --title "Caddy $version" \
             --generate-notes \
-            --notes-start-tag "$prev"
+            "${range[@]}"
