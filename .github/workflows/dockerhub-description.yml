@@ -1,0 +1,34 @@
+---
+# Keeps the Docker Hub repository page in sync with README.md. Docker Hub has
+# no way to pull a README, and there is no sync otherwise: the page currently
+# shows an empty description.
+
+name: Docker Hub description
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - README.md
+      - .github/workflows/dockerhub-description.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    name: Update Docker Hub description
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Push README to Docker Hub
+        uses: peter-evans/dockerhub-description@1b9a80c056b620d92cedb9d9b5a223409c68ddfa  # v5.0.0
+        with:
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ github.repository_owner }}/caddy-pink
+          short-description: "Caddy with Cloudflare DNS, rate limiting, L4, CrowdSec and GeoIP modules"
+          enable-url-completion: true
