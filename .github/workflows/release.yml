@@ -1,0 +1,56 @@
+---
+# Tags the Caddy version pinned in caddy-pink/Dockerfile and publishes a GitHub
+# release with generated notes.
+#
+# Version is derived, never stored separately: the Dockerfile is the source of
+# truth and build.yml already publishes images under the same `v<version>` tag.
+# Running after the build means the release is created only once the image it
+# describes is actually published, on the same commit.
+
+name: Release
+
+on:
+  workflow_run:
+    workflows: [Build caddy-pink]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Tag and publish release
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout the built commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Create GitHub release for a new version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          version=$(grep -E '^ARG[[:space:]]+CADDY_VERSION=' caddy-pink/Dockerfile \
+            | sed -E 's/^ARG[[:space:]]+CADDY_VERSION=([0-9]+\.[0-9]+\.[0-9]+).*$/\1/' | head -n1)
+          tag="v$version"
+
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "tag $tag already exists; nothing to release"
+            exit 0
+          fi
+
+          prev=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1 || true)
+          prev=${prev:-$(git rev-list --max-parents=0 HEAD)}
+
+          gh release create "$tag" \
+            --target "$SHA" \
+            --title "Caddy $version" \
+            --generate-notes \
+            --notes-start-tag "$prev"
