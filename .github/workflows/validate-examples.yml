@@ -13,16 +13,43 @@ on:
     paths:
       - examples/**
       - caddy-pink/Dockerfile
+      - README.md
       - .github/workflows/validate-examples.yml
   push:
     branches: [main]
     paths:
       - examples/**
       - caddy-pink/Dockerfile
+      - README.md
       - .github/workflows/validate-examples.yml
   workflow_dispatch:
 
 jobs:
+  # Cheap, no Docker: the README module list and the Dockerfile --with flags
+  # are edited by hand and drift silently otherwise.
+  modules:
+    name: README module list matches Dockerfile
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Compare module lists
+        run: |
+          set -euo pipefail
+          # Subpackages (/http, /appsec) and @version suffixes collapse to the
+          # module repo, which is the granularity the README documents.
+          grep -oE -- '--with [^ ]+' caddy-pink/Dockerfile \
+            | awk '{print $2}' | sed -E 's/@.*//' | cut -d/ -f1-3 | sort -u > /tmp/in-build
+          grep -oE '`github\.com/[^`]+`' README.md \
+            | tr -d '`' | cut -d/ -f1-3 | sort -u > /tmp/in-readme
+
+          if ! diff -u /tmp/in-build /tmp/in-readme; then
+            echo "::error::README module list and caddy-pink/Dockerfile disagree (see diff above)"
+            exit 1
+          fi
+          echo "README lists all $(wc -l < /tmp/in-build) modules"
+
   validate:
     name: Adapt examples with the image's modules
     runs-on: ubuntu-latest
